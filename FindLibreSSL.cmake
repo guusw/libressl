@@ -62,7 +62,14 @@ LIBRESSL_VERSION
 Hints
 ^^^^^
 
-Set LIBRESSL_ROOT_DIR to the root directory of an LibreSSL installation.
+LIBRESSL_ROOT_DIR
+    Set to the root directory of an LibreSSL installation.
+LIBRESSL_CRYPTO_ADDITIONAL_VERSIONS
+    Additional version to search for the crypto library (crypto-<version> on windows)
+LIBRESSL_SSL_ADDITIONAL_VERSIONS
+    Additional version to search for the ssl library (ssl-<version> on windows)
+LIBRESSL_TLS_ADDITIONAL_VERSIONS
+    Additional version to search for the tls library (tls-<version> on windows)
 
 ]=======================================================================]
 
@@ -73,6 +80,25 @@ set(_LIBRESSL_ROOT_HINTS
     ${LIBRESSL_ROOT_DIR}
     ENV LIBRESSL_ROOT_DIR
 )
+
+set(_LIBRESSL_CRYPTO_VERSIONS ${LIBRESSL_CRYPTO_ADDITIONAL_VERSIONS} 49)
+set(_LIBRESSL_SSL_VERSIONS ${LIBRESSL_SSL_ADDITIONAL_VERSIONS} 52)
+set(_LIBRESSL_TLS_VERSIONS ${LIBRESSL_TLS_ADDITIONAL_VERSIONS} 24)
+
+foreach(_VERSION ${_LIBRESSL_CRYPTO_VERSIONS})
+    list(APPEND _LIBRESSL_CRYPTO_LIB_NAMES crypto-${_VERSION})
+endforeach()
+list(APPEND _LIBRESSL_CRYPTO_LIB_NAMES libcrypto crypto)
+
+foreach(_VERSION ${_LIBRESSL_SSL_VERSIONS})
+    list(APPEND _LIBRESSL_SSL_LIB_NAMES ssl-${_VERSION})
+endforeach()
+list(APPEND _LIBRESSL_CRYPTO_LIB_NAMES libssl ssl)
+
+foreach(_VERSION ${_LIBRESSL_TLS_VERSIONS})
+    list(APPEND _LIBRESSL_TLS_LIB_NAMES tls-${_VERSION})
+endforeach()
+list(APPEND _LIBRESSL_TLS_LIB_NAMES libtls tls)
 
 # Set Paths
 if (WIN32)
@@ -105,8 +131,7 @@ find_path(LIBRESSL_INCLUDE_DIR
 # Find Crypto Library
 find_library(LIBRESSL_CRYPTO_LIBRARY
     NAMES
-        libcrypto
-        crypto
+        ${_LIBRESSL_CRYPTO_LIB_NAMES}
         NAMES_PER_DIR
     ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
     PATH_SUFFIXES
@@ -116,8 +141,7 @@ find_library(LIBRESSL_CRYPTO_LIBRARY
 # Find SSL Library
 find_library(LIBRESSL_SSL_LIBRARY
     NAMES
-        libssl
-        ssl
+        ${_LIBRESSL_SSL_LIB_NAMES}
         NAMES_PER_DIR
     ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
     PATH_SUFFIXES
@@ -127,8 +151,7 @@ find_library(LIBRESSL_SSL_LIBRARY
 # Find TLS Library
 find_library(LIBRESSL_TLS_LIBRARY
     NAMES
-        libtls
-        tls
+        ${_LIBRESSL_TLS_LIB_NAMES}
         NAMES_PER_DIR
     ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
     PATH_SUFFIXES
